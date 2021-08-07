@@ -12,7 +12,6 @@ import { Injectables } from '../interfaces/injectables';
 import { IDocumentService } from '../interfaces/document.service.interface';
 import { SuccessResponseDto } from '../utils/success-response.dto';
 import { GenerateUploadUrlDto } from './dtos/generate-upload-url.dto';
-import { SkipAuth } from '../utils/meta/skip-auth';
 
 @Controller('documents')
 export class DocumentsController {
@@ -32,7 +31,6 @@ export class DocumentsController {
     );
   }
 
-  @SkipAuth()
   @Get('r|^/files/(\\\\w+)/(\\\\w+)/(\\\\w+\\\\.\\\\w+)$|')
   async getFile(@Req() req: Request) {
     const key = req.url.split('files/')[1];
