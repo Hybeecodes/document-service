@@ -7,11 +7,15 @@ import {
   Post,
   Req,
   Request,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Injectables } from '../interfaces/injectables';
 import { IDocumentService } from '../interfaces/document.service.interface';
 import { SuccessResponseDto } from '../utils/success-response.dto';
 import { GenerateUploadUrlDto } from './dtos/generate-upload-url.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UploadFileDto } from './dtos/upload-file.dto';
 
 @Controller('documents')
 export class DocumentsController {
@@ -19,6 +23,16 @@ export class DocumentsController {
     @Inject(Injectables.DOCUMENT_SERVICE)
     public documentsService: IDocumentService,
   ) {}
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: UploadFileDto,
+  ): Promise<SuccessResponseDto> {
+    const response = await this.documentsService.uploadFile(file, body);
+    return new SuccessResponseDto('File upload Successful', response);
+  }
 
   @Post('upload_url')
   async generateUploadUrl(

@@ -9,6 +9,8 @@ import {
   getExtensionFromFilename,
 } from '../../utils/helpers';
 import { GenerateUploadUrlResponseDto } from '../../documents/dtos/generate-upload-url-response.dto';
+import { UploadFileDto } from '../../documents/dtos/upload-file.dto';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AwsService implements IDocumentService {
@@ -84,6 +86,35 @@ export class AwsService implements IDocumentService {
       this.logger.error(`Unable to Generate Signed URL: ${e.message}`);
       throw new HttpException(
         'Unable to Generate Signed URL',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async uploadFile(file: Express.Multer.File, payload: UploadFileDto) {
+    const { uploadPath } = payload;
+    console.log(file);
+    try {
+      const fileNameArray = file.originalname.split('.');
+      const ext = fileNameArray[fileNameArray.length - 1];
+      const key = `${uploadPath}/${uuidv4()}.${ext}`;
+      const { Key, Location, ETag } = await this.s3Client
+        .upload({
+          Bucket: this.BUCKET_NAME,
+          Key: key,
+          ACL: 'public-read',
+          Body: file.buffer,
+        })
+        .promise();
+      return {
+        uploadPath: Key,
+        location: Location,
+        tag: ETag,
+      };
+    } catch (e) {
+      this.logger.error(`Unable to Upload File: ${e.message}`);
+      throw new HttpException(
+        'File upload failed',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
