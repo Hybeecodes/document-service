@@ -107,7 +107,7 @@ export class AwsService implements IDocumentService {
         })
         .promise();
       return {
-        uploadPath: Key,
+        key: Key,
         location: Location,
         tag: ETag,
       };
